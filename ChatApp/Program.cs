@@ -9,15 +9,9 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Context;
 using Swashbuckle.AspNetCore.Filters;
-using System.Security.Claims;
 using System.Text;
 using ChatApp.Hubs;
 using ChatApp.DomainModel;
-
-
-
-
-
 using ChatApp.DomainModel.Repo;
 using ChatApp.DomainModel.Repo.Interfaces;
 

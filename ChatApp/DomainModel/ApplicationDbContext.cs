@@ -1,6 +1,5 @@
 ﻿using ChatApp.DomainModel.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace ChatApp.DomainModel
 {
