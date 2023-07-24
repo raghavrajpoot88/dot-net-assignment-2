@@ -1,64 +1,55 @@
 ﻿using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
 using ChatApp.MiddleLayer.DTOs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ChatApp.DomainModel.Repo
 {
     public class UserRepository : IUser
     {
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public UserRepository(ApplicationDbContext applicationDbContext)
+        public UserRepository(ApplicationDbContext applicationDbContext, UserManager<IdentityUser> userManager)
         {
             _applicationDbContext = applicationDbContext;
+            _userManager = userManager;
         }
         public ICollection<User> GetUsers()
         {
             return _applicationDbContext.users.OrderBy(u => u.UserId).ToList();
         }
-        public User GetUserById(Guid id)
+        public async Task<IdentityUser> GetUserById(string id)
         {
-            return _applicationDbContext.users.Where(u => u.UserId == id).FirstOrDefault();
+            return await _userManager.FindByIdAsync(id);
         }
 
-        public void AddUser(User registeredUser)
+        public async Task AddUser(IdentityUser registeredUser,string Password)
         {
-            _applicationDbContext.users.Add(registeredUser);
-            _applicationDbContext.SaveChanges();
+            await _userManager.CreateAsync(registeredUser, Password);
         }
-        public void ValidateRegistration(UserDTO u)
+
+        public async Task<IdentityUser> checkUser(loginDTO login)
         {
-            try
+            var result = await _userManager.FindByEmailAsync(login.Email);
+            if (result is null) 
             {
-                //Validations
-                if (string.IsNullOrEmpty(u.Email) || u.Email == "string")
-                    throw new Exception("Email Required");
-                if (string.IsNullOrEmpty(u.Name) || u.Name == "string")
-                    throw new Exception("User name Required");
-                //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
-                //    throw new Exception("Password Required");
-                var CheckUserExists = (from user in GetUsers()
-                                       where user.Email.Equals(u.Email)
-                                       select user).Count();
-                if (CheckUserExists > 0)
-                {
-                    throw new Exception("User Already exist");
-                }
-
+                return null;
             }
-            catch (Exception ex)
+            if(await _userManager.CheckPasswordAsync(result, login.Password))
             {
-                throw ex;
+                return result;
             }
+            return null;
         }
 
-        public User ValidateLogin(loginDTO login)
-        {
-            var user =  _applicationDbContext.users.FirstOrDefault(ul => ul.Email == login.Email);
-            return user;
-        }
 
+
+       
+       
     }
 }

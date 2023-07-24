@@ -14,11 +14,17 @@ using ChatApp.Hubs;
 using ChatApp.DomainModel;
 using ChatApp.DomainModel.Repo;
 using ChatApp.DomainModel.Repo.Interfaces;
+using ChatApp.MiddleLayer.Services;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
+    {
+        options.Password.RequiredLength = 8;
+    }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+     
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -35,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
-
+builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddScoped<IUser ,UserRepository>();
 builder.Services.AddScoped<IMessages, MessagesRepository>();
 

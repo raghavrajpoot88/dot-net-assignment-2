@@ -59,7 +59,7 @@ namespace ChatApp.Core.Controller
             }
             catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
