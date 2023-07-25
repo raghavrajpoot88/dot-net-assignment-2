@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230724085914_Initial")]
-    partial class Initial
+    [Migration("20230725130125_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,53 +24,27 @@ namespace ChatApp.Migrations
 
             modelBuilder.Entity("ChatApp.DomainModel.Models.Messages", b =>
                 {
-                    b.Property<Guid>("MsgId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                    b.Property<string>("MsgId")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("MsgBody")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<Guid>("ReceiverId")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("MsgId");
 
                     b.ToTable("messages");
-                });
-
-            modelBuilder.Entity("ChatApp.DomainModel.Models.User", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

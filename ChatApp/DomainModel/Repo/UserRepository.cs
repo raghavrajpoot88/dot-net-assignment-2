@@ -4,6 +4,7 @@ using ChatApp.MiddleLayer.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -19,9 +20,10 @@ namespace ChatApp.DomainModel.Repo
             _applicationDbContext = applicationDbContext;
             _userManager = userManager;
         }
-        public ICollection<User> GetUsers()
+        public async Task<ICollection<IdentityUser>> GetUsers()
         {
-            return _applicationDbContext.users.OrderBy(u => u.UserId).ToList();
+            var result = await _userManager.Users.ToListAsync();
+            return result;
         }
         public async Task<IdentityUser> GetUserById(string id)
         {
@@ -31,6 +33,7 @@ namespace ChatApp.DomainModel.Repo
         public async Task AddUser(IdentityUser registeredUser,string Password)
         {
             await _userManager.CreateAsync(registeredUser, Password);
+            
         }
 
         public async Task<IdentityUser> checkUser(loginDTO login)
@@ -47,6 +50,18 @@ namespace ChatApp.DomainModel.Repo
             return null;
         }
 
+        public async Task<List<Claim>> GetClaims(string email) 
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            List<Claim> claims = new List<Claim>();
+            if (!string.IsNullOrEmpty(email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, email));
+                claims.AddRange(await _userManager.GetClaimsAsync(user));
+            }
+            return claims;
+        }
 
 
        

@@ -1,16 +1,19 @@
 ﻿using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.DomainModel.Repo
 {
-    public class MessagesRepository :IMessages
+    public class MessagesRepository : IMessages
     {
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public MessagesRepository(ApplicationDbContext applicationDbContext)
+        public MessagesRepository(ApplicationDbContext applicationDbContext, UserManager<IdentityUser> userManager)
         {
             _applicationDbContext = applicationDbContext;
+            _userManager = userManager;
         }
 
 
@@ -19,7 +22,7 @@ namespace ChatApp.DomainModel.Repo
             var result = await _applicationDbContext.messages.ToListAsync();
             return result;
         }
-        public async Task<ICollection<Messages>> GetUser(Guid UserId)
+        public async Task<ICollection<Messages>> GetUser(string UserId)
 
         {
 
@@ -29,7 +32,7 @@ namespace ChatApp.DomainModel.Repo
             return result;
         }
 
-        public async Task<Messages> GetMessageById(Guid id)
+        public async Task<Messages> GetMessageById(string id)
         {
 
             var result = await _applicationDbContext.messages.
@@ -37,18 +40,18 @@ namespace ChatApp.DomainModel.Repo
 
             return result;
         }
-        public  User GetCurrentUser(string email)
+        public async Task<IdentityUser> GetCurrentUser(string email)
         {
-            var senderId = _applicationDbContext.users.FirstOrDefault(u => u.Email == email);
+            var senderId = await _userManager.FindByEmailAsync(email);
             return senderId;
         }
 
-        public async Task<ICollection<Messages>> GetConversationHistory(Guid UserId, string currentUser, DateTime? before)
+        public async Task<ICollection<Messages>> GetConversationHistory(string UserId, string currentUser, DateTime? before)
         {
 
-            var senderId = GetCurrentUser(currentUser);
-            var MessageHistory = await _applicationDbContext.messages.Where(u => (u.ReceiverId == UserId && u.UserId == senderId.UserId
-                || (u.UserId == UserId && u.ReceiverId == senderId.UserId)) && (before == null || u.TimeStamp < before))
+            var senderId = await GetCurrentUser(currentUser);
+            var MessageHistory = await _applicationDbContext.messages.Where (u => (u.ReceiverId == UserId && u.UserId == senderId.Id)
+                || (u.UserId == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
 
             return MessageHistory;
@@ -77,7 +80,7 @@ namespace ChatApp.DomainModel.Repo
             return null;
 
         }
-        public async Task RemoveMessage(Guid MsgId)
+        public async Task RemoveMessage(string MsgId)
         {
             var result = await _applicationDbContext.messages.Where(a => a.MsgId == MsgId).FirstOrDefaultAsync();
             if (result != null)

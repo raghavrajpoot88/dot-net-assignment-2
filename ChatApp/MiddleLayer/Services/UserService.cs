@@ -23,6 +23,12 @@ namespace ChatApp.MiddleLayer.Services
             _configuration = configuration;
         }
 
+        public async Task<ICollection<IdentityUser>> GetUsers()
+        {
+            var result = await _userRepo.GetUsers();
+            return result; 
+        }
+
         public async Task<RegistrationPara> GetUserById(string id)
         {
             var result = await _userRepo.GetUserById(id);
@@ -99,19 +105,22 @@ namespace ChatApp.MiddleLayer.Services
             return null;
         }
 
-        public string GenerateToken(loginDTO login)
+        public async Task<string> GenerateToken(loginDTO login)
         {
-            string token = CreateToken(login);
+            string token = await CreateToken(login);
+
             return token;
         }
 
-        private string CreateToken(loginDTO user)
+        private async Task<string> CreateToken(loginDTO user)
         {
-            List<Claim> claims = new List<Claim>();
-            if (!string.IsNullOrEmpty(user.Email))
-            {
-                claims.Add(new Claim(ClaimTypes.Email, user.Email));
-            }
+            var claims = await _userRepo.GetClaims(user.Email);
+            //List<Claim> claims = new List<Claim>();
+            //if (!string.IsNullOrEmpty(user.Email))
+            //{
+            //    claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            //    claims.AddRange(_)
+            //}
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

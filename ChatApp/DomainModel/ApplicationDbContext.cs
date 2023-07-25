@@ -11,7 +11,6 @@ namespace ChatApp.DomainModel
         {
 
         }
-        public DbSet<User> users { get; set; }
         public DbSet<Messages> messages { get; set; }
 
 

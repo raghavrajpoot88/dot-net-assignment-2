@@ -23,6 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
     {
         options.Password.RequiredLength = 8;
+
+        options.User.RequireUniqueEmail = true;
     }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
      
 builder.Services.AddControllers();
@@ -43,6 +45,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddScoped<IUser ,UserRepository>();
+builder.Services.AddTransient<IMessagesService, MessagesService>();
 builder.Services.AddScoped<IMessages, MessagesRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

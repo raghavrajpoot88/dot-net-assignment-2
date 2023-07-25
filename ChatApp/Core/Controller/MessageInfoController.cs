@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ChatApp.MiddleLayer.Services;
 
 namespace ChatApp.Core.Controller
 {
@@ -18,20 +19,25 @@ namespace ChatApp.Core.Controller
         private readonly IMessages _messageInfo;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
-        public MessageInfoController(IMessages messageInfo, IConfiguration configuration, ApplicationDbContext applicationDbContext)
+        private readonly IMessagesService _messagesService;
+
+        public MessageInfoController(IMessages messageInfo, IConfiguration configuration, ApplicationDbContext applicationDbContext,
+            IMessagesService messagesService)
         {
             _messageInfo = messageInfo;
             _configuration = configuration;
             _context = applicationDbContext;
+            _messagesService = messagesService;
         }
 
         // Get Conversation history of messages
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> ConversationHistory(Guid UserId, DateTime? before = null, int count = 20, string sort = "asc")
+        public async Task<IActionResult> ConversationHistory(string UserId, DateTime? before = null, int count = 20, string sort = "asc")
         {
             string currentUser = GetSenderIdFromToken();
-            var result = await _messageInfo.GetConversationHistory(UserId, currentUser, before);
+            var result = await _messagesService.coversationHistory(UserId, currentUser, before);
+            //var result = await _messageInfo.GetConversationHistory(UserId, currentUser, before);
             return Ok(result);
         }
 
@@ -42,14 +48,15 @@ namespace ChatApp.Core.Controller
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
+
                 string currentUser = GetSenderIdFromToken();
-                var senderId = _messageInfo.GetCurrentUser(currentUser);
+                var senderId = await _messagesService.GetLoggedUser(currentUser);
 
                 // Create a new message object
                 var message = new Messages
                 {
-                    MsgId = Guid.NewGuid(),
-                    UserId = senderId.UserId,
+                    
+                    UserId = senderId.Id,
                     ReceiverId = messageInfo.ReceiverId,
                     MsgBody = messageInfo.MsgBody,
                     TimeStamp = DateTime.UtcNow
@@ -66,15 +73,16 @@ namespace ChatApp.Core.Controller
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult<Messages>> UpdateMessage(Guid id, updateDTO Msg)
+        public async Task<ActionResult<Messages>> UpdateMessage(string id, updateDTO Msg)
         {
             try
             {
                 var currentUser = GetSenderIdFromToken();
-                var SenderId = _messageInfo.GetCurrentUser(currentUser);
-                var User = await _messageInfo.GetMessageById(id);
 
-                if (User.UserId != SenderId.UserId) return Unauthorized();
+                var SenderId = await _messagesService.GetLoggedUser(currentUser);
+                var User = await _messagesService.GetMessageId(id);
+
+                if (User.UserId != SenderId.Id) return Unauthorized();
                 if (User == null || id != User.MsgId) return NotFound($"User Id={id} not found ");
 
                 User.MsgBody = Msg.content;
@@ -90,15 +98,17 @@ namespace ChatApp.Core.Controller
 
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<ActionResult> RemoveMsg(Guid id)
+        public async Task<ActionResult> RemoveMsg(string id)
         {
             try
             {
                 var currentUser = GetSenderIdFromToken();
-                var SenderId = _messageInfo.GetCurrentUser(currentUser);
+                var SenderId = await _messagesService.GetLoggedUser(currentUser);
                 Messages User = await _messageInfo.GetMessageById(id);
-                if (User.UserId != SenderId.UserId) return Unauthorized();
+
+                if (User.UserId != SenderId.Id) return Unauthorized();
                 if (User == null || id != User.MsgId) return NotFound($"User Id={id} not found ");
+
                 await _messageInfo.RemoveMessage(id);
                 return Ok();
             }
@@ -122,7 +132,7 @@ namespace ChatApp.Core.Controller
                 return emailClaim.Value;
             }
             catch (SecurityTokenException ex)
-            { 
+            {
                 throw new Exception("Invalid token.", ex);      // Handle exceptions according to your application's needs
             }
         }

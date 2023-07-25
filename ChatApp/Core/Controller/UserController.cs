@@ -16,20 +16,17 @@ namespace ChatApp.Core.Controller
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUser _user;
         private readonly IUserService _userService;
 
-        public UserController(IUser user,IUserService userService)
+        public UserController(IUserService userService)
         {
-            _user = user;
             _userService = userService;
         }
 
         [HttpGet]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            var loggedInUserId = User.FindFirst(ClaimTypes.Email)?.Value;
-            var Users = _user.GetUsers();
+            var Users = await _userService.GetUsers();
             return Ok(Users);
         }
 
@@ -57,7 +54,7 @@ namespace ChatApp.Core.Controller
            
             if (result!=null)
             {
-                string token = _userService.GenerateToken(login);
+                string token = await _userService.GenerateToken(login);
                 return Ok(new { token,result });
                 
             }

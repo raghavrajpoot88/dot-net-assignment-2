@@ -1,4 +1,5 @@
 ﻿using ChatApp.DomainModel.Models;
+using Microsoft.AspNetCore.Identity;
 using Org.BouncyCastle.Bcpg.Sig;
 
 namespace ChatApp.DomainModel.Repo.Interfaces
@@ -6,13 +7,13 @@ namespace ChatApp.DomainModel.Repo.Interfaces
     public interface IMessages
     {
         public Task<ICollection<Messages>> GetMessage();
-        Task<Messages> GetMessageById(Guid id);
-        public Task<ICollection<Messages>> GetUser(Guid id);
-        public Task<ICollection<Messages>> GetConversationHistory(Guid UserId, string email, DateTime? before);
+        Task<Messages> GetMessageById(string id);
+        public Task<ICollection<Messages>> GetUser(string id);
+        public Task<ICollection<Messages>> GetConversationHistory(string UserId, string email, DateTime? before);
         public Task AddMessage(Messages messageInfo);
-        public Task RemoveMessage(Guid MsgId);
+        public Task RemoveMessage(string MsgId);
         public Task<Messages> UpdateMessage(Messages messageInfo);
 
-        public User GetCurrentUser(string email);
+        public Task<IdentityUser> GetCurrentUser(string email);
     }
 }
