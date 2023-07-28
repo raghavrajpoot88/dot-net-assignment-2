@@ -21,8 +21,13 @@ namespace ChatApp.Migrations
 
             modelBuilder.Entity("ChatApp.DomainModel.Models.Messages", b =>
                 {
-                    b.Property<string>("MsgId")
-                        .HasColumnType("varchar(255)");
+                    b.Property<Guid>("MsgId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Id")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("MsgBody")
                         .IsRequired()
@@ -34,10 +39,6 @@ namespace ChatApp.Migrations
 
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.HasKey("MsgId");
 

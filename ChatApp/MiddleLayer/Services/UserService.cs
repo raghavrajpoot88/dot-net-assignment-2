@@ -51,16 +51,8 @@ namespace ChatApp.MiddleLayer.Services
                     throw new Exception("User name Required");
                 //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
                 //    throw new Exception("Password Required");
-                //var CheckUserExists = (from user in _user.GetUsers()
-                //                       where user.Email.Equals(u.Email)
-                //                       select user).Count();
-                //if (CheckUserExists > 0)
-                //{
-                //    throw new Exception("User Already exist");
-                //}
-                //CreatePasswordHash(u.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
                 var registeredUser = new IdentityUser {
-                
                     Email = u.Email,
                     UserName = u.Name
                 };
@@ -80,47 +72,28 @@ namespace ChatApp.MiddleLayer.Services
                 throw ex;
             }
         }
-        //private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        //{
-        //    using (var hmac = new HMACSHA512())
-        //    {
-        //        passwordSalt = hmac.Key;
-        //        passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        //    }
-        //}
+        
 
-        public async Task<RegistrationPara> CheckUserRegister(loginDTO login)
+        public async Task<IdentityUser> CheckUserRegister(loginDTO login)
         {   
             var result = await _userRepo.checkUser(login);
-            if (result != null)
-            {
-                var response = new RegistrationPara
-                {
-                    UserId = result.Id,
-                    Name = result.UserName,
-                    Email = result.Email,
-                };
-                return response;
-            }
-            return null;
+            return result;
         }
 
-        public async Task<string> GenerateToken(loginDTO login)
+        public string GenerateToken(IdentityUser login)
         {
-            string token = await CreateToken(login);
-
+            string token =  CreateToken(login);
             return token;
         }
 
-        private async Task<string> CreateToken(loginDTO user)
+        private string CreateToken(IdentityUser user)
         {
-            var claims = await _userRepo.GetClaims(user.Email);
-            //List<Claim> claims = new List<Claim>();
-            //if (!string.IsNullOrEmpty(user.Email))
-            //{
-            //    claims.Add(new Claim(ClaimTypes.Email, user.Email));
-            //    claims.AddRange(_)
-            //}
+            List<Claim> claims = new List<Claim>();
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, user.Email));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -130,25 +103,6 @@ namespace ChatApp.MiddleLayer.Services
                 signingCredentials: cred);
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
-        }
-        public bool VerifyPass(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            if (password == null || passwordHash == null || passwordSalt == null)
-            {
-                return false; // Handle the case where any of the parameters are null
-            }
-            try
-            {
-                using (var hmac = new HMACSHA512(passwordSalt))
-                {
-                    var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                    return computedHash.SequenceEqual(passwordHash);
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
     }
 }

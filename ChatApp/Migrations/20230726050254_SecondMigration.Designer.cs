@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230725130125_initial")]
-    partial class initial
+    [Migration("20230726050254_SecondMigration")]
+    partial class SecondMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,10 @@ namespace ChatApp.Migrations
                     b.Property<string>("MsgId")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("Id")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("MsgBody")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -37,10 +41,6 @@ namespace ChatApp.Migrations
 
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.HasKey("MsgId");
 

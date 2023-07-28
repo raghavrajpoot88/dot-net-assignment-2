@@ -20,15 +20,69 @@ using Microsoft.AspNetCore.Identity;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection")
+        , ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")));
+});
+
 builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
     {
         options.Password.RequiredLength = 8;
-
         options.User.RequireUniqueEmail = true;
     }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
      
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddScoped<IUser ,UserRepository>();
+builder.Services.AddScoped<IMessagesService, MessagesService>();
+builder.Services.AddScoped<IMessages, MessagesRepository>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
+                .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
+            ValidateIssuer=false,
+            ValidateAudience=false
+        };
+    });
+
+
+builder.Services.AddHttpLogging(httpLogging =>
+{
+    httpLogging.LoggingFields = HttpLoggingFields.All;
+});
+builder.Host.UseSerilog((hostingContext, LoggerConfig) =>
+{
+    LoggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
+});
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+    policy =>
+    {
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .WithOrigins("http://localhost:4200")
+              .AllowCredentials(); // Allow credentials
+    });
+});
+builder.Services.AddSignalR();
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -42,48 +96,6 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
-
-builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddScoped<IUser ,UserRepository>();
-builder.Services.AddTransient<IMessagesService, MessagesService>();
-builder.Services.AddScoped<IMessages, MessagesRepository>();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-                .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
-            ValidateIssuer=false,
-            ValidateAudience=false
-        };
-    });
-builder.Services.AddHttpLogging(httpLogging =>
-{
-    httpLogging.LoggingFields = HttpLoggingFields.All;
-});
-builder.Host.UseSerilog((hostingContext, LoggerConfig) =>
-{
-    LoggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
-});
-
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-});
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(
-    policy =>
-    {
-        policy.AllowAnyHeader().WithOrigins("http://localhost:4200").AllowAnyMethod();
-    });
-});
-builder.Services.AddSignalR();
 
 
 var app = builder.Build();
@@ -112,5 +124,7 @@ app.UseCors();
 app.MapControllers();
 
 app.UseCustomMiddle();
+
+app.MapHub<ChatHub>("/hub");
 
 app.Run();

@@ -32,6 +32,7 @@ namespace ChatApp.DomainModel.Repo
 
         public async Task AddUser(IdentityUser registeredUser,string Password)
         {
+
             await _userManager.CreateAsync(registeredUser, Password);
             
         }
@@ -39,29 +40,16 @@ namespace ChatApp.DomainModel.Repo
         public async Task<IdentityUser> checkUser(loginDTO login)
         {
             var result = await _userManager.FindByEmailAsync(login.Email);
-            if (result is null) 
-            {
-                return null;
-            }
-            if(await _userManager.CheckPasswordAsync(result, login.Password))
+            if (result!= null && await _userManager.CheckPasswordAsync(result, login.Password)) 
             {
                 return result;
             }
+            
+
             return null;
         }
 
-        public async Task<List<Claim>> GetClaims(string email) 
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-
-            List<Claim> claims = new List<Claim>();
-            if (!string.IsNullOrEmpty(email))
-            {
-                claims.Add(new Claim(ClaimTypes.Email, email));
-                claims.AddRange(await _userManager.GetClaimsAsync(user));
-            }
-            return claims;
-        }
+        
 
 
        

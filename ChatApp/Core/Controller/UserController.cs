@@ -46,25 +46,31 @@ namespace ChatApp.Core.Controller
             return Ok(result);
         }
 
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(loginDTO login)
         {
             var result = await _userService.CheckUserRegister(login);
-           
-            if (result!=null)
+            var response = new RegistrationPara
             {
-                string token = await _userService.GenerateToken(login);
-                return Ok(new { token,result });
-                
+                UserId = result.Id,
+                Name = result.UserName,
+                Email = result.Email,
+            };
+
+            if (result != null)
+            {
+                string token = _userService.GenerateToken(result);
+                return Ok(new { token, response});
+
             }
-                return BadRequest("User is not Found");
+            return BadRequest("User is not Found");
             //if (!_userService.VerifyPass(login.Password, user.PasswordHash, user.PasswordSalt))
             //{
             //    return BadRequest("Wrong Password.");
             //}
-             
-            
+
+
         }
     }
 }

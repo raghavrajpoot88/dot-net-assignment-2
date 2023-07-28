@@ -14,7 +14,7 @@ namespace ChatApp.MiddleLayer.Services
             _messages = messages;
         }
 
-        public async Task<Messages> GetMessageId(string id)
+        public async Task<Messages> GetMessageId(Guid id)
         {
             return await _messages.GetMessageById(id);
         }
@@ -30,6 +30,21 @@ namespace ChatApp.MiddleLayer.Services
             return await _messages.GetCurrentUser(email) ;
         }
 
+        public void AddMessageService(Messages messages)
+        {
+            _messages.AddMessage(messages);
+        }
 
+        public async Task<Messages> UpdateMessageService(Messages messageInfo)
+        {
+            var result = await _messages.UpdateMessage(messageInfo);
+            return result;
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            var result = await _messages.RemoveMessage(id);
+            return result;
+        }
     }
 }

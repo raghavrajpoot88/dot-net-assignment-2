@@ -9,8 +9,7 @@ namespace ChatApp.DomainModel.Repo.Interfaces
     {
         Task<ICollection<IdentityUser>> GetUsers();
         public Task<IdentityUser> GetUserById(string id);
-        public Task AddUser(IdentityUser registeredUser,string Password);
+        public Task AddUser(IdentityUser registeredUser, string Password);
         public Task<IdentityUser> checkUser(loginDTO login);
-        Task<List<Claim>> GetClaims(string email);
     }
 }

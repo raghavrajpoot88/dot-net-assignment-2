@@ -27,12 +27,12 @@ namespace ChatApp.DomainModel.Repo
         {
 
             var result = await _applicationDbContext.messages.
-               Where(a => a.UserId == UserId).ToListAsync();
+               Where(a => a.Id == UserId).ToListAsync();
 
             return result;
         }
 
-        public async Task<Messages> GetMessageById(string id)
+        public async Task<Messages> GetMessageById(Guid id)
         {
 
             var result = await _applicationDbContext.messages.
@@ -50,8 +50,8 @@ namespace ChatApp.DomainModel.Repo
         {
 
             var senderId = await GetCurrentUser(currentUser);
-            var MessageHistory = await _applicationDbContext.messages.Where (u => (u.ReceiverId == UserId && u.UserId == senderId.Id)
-                || (u.UserId == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
+            var MessageHistory = await _applicationDbContext.messages.Where (u => (u.ReceiverId == UserId && u.Id == senderId.Id)
+                || (u.Id == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
 
             return MessageHistory;
@@ -59,7 +59,7 @@ namespace ChatApp.DomainModel.Repo
 
         public async Task AddMessage(Messages messageInfo)
         {
-            var result = await _applicationDbContext.messages.AddAsync(messageInfo);
+            await _applicationDbContext.messages.AddAsync(messageInfo);
             await _applicationDbContext.SaveChangesAsync();
 
         }
@@ -69,10 +69,10 @@ namespace ChatApp.DomainModel.Repo
             if (user != null)
             {
                 user.MsgId = messageInfo.MsgId;
-                user.UserId = messageInfo.UserId;
+                user.Id= messageInfo.Id;
                 user.ReceiverId = messageInfo.ReceiverId;
                 user.MsgBody = messageInfo.MsgBody;
-                user.TimeStamp = DateTime.UtcNow;
+                user.TimeStamp = messageInfo.TimeStamp;
 
                 await _applicationDbContext.SaveChangesAsync();
                 return user;
@@ -80,16 +80,17 @@ namespace ChatApp.DomainModel.Repo
             return null;
 
         }
-        public async Task RemoveMessage(string MsgId)
+        public async Task<bool> RemoveMessage(Guid MsgId)
         {
             var result = await _applicationDbContext.messages.Where(a => a.MsgId == MsgId).FirstOrDefaultAsync();
             if (result != null)
             {
                 _applicationDbContext.messages.Remove(result);
                 await _applicationDbContext.SaveChangesAsync();
+                return true;
 
             }
-            await _applicationDbContext.SaveChangesAsync();
+            return false;
 
         }
 

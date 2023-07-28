@@ -9,6 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using ChatApp.MiddleLayer.Services;
+using Newtonsoft.Json.Linq;
+using ChatApp.Core.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using ChatApp.Hubs;
+using System;
 
 namespace ChatApp.Core.Controller
 {
@@ -18,16 +23,17 @@ namespace ChatApp.Core.Controller
     {
         private readonly IMessages _messageInfo;
         private readonly IConfiguration _configuration;
-        private readonly ApplicationDbContext _context;
         private readonly IMessagesService _messagesService;
+        //private readonly IHubContext<ChatHub> _hubContext;
+        //,IHubContext<ChatHub ,IChatHub> hubContext 
 
-        public MessageInfoController(IMessages messageInfo, IConfiguration configuration, ApplicationDbContext applicationDbContext,
-            IMessagesService messagesService)
+        public MessageInfoController(IMessages messageInfo, IConfiguration configuration,
+                                        IMessagesService messagesService)
         {
             _messageInfo = messageInfo;
             _configuration = configuration;
-            _context = applicationDbContext;
             _messagesService = messagesService;
+            //_hubContext = hubContext;
         }
 
         // Get Conversation history of messages
@@ -41,7 +47,7 @@ namespace ChatApp.Core.Controller
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("send")]
         [Authorize]
         public async Task<ActionResult<Messages>> AddMessaage(MessagesDTO messageInfo)
         {
@@ -55,13 +61,15 @@ namespace ChatApp.Core.Controller
                 // Create a new message object
                 var message = new Messages
                 {
-                    
-                    UserId = senderId.Id,
+                    MsgId = Guid.NewGuid(),
+                    Id = senderId.Id,
                     ReceiverId = messageInfo.ReceiverId,
                     MsgBody = messageInfo.MsgBody,
                     TimeStamp = DateTime.UtcNow
                 };
-                await _messageInfo.AddMessage(message);
+                _messagesService.AddMessageService(message);
+                //Broadcast the message from this point
+                //await _hubContext.Clients.Client(message.ReceiverId).NewMessage( message);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -69,24 +77,49 @@ namespace ChatApp.Core.Controller
                 throw ex;
             }
         }
+        //private string GetConnectionId()
+        //{
+            
+        //        this._hubConnection.invoke('GetConnectionId')
+        //        .then((data) => {
+        //            console.log(data);
+        //            this.connectionId = data;
+        //        });
+            
+        //}
+
+        //    private getConnectionId = () => {
+        //  this._hubConnection.invoke('GetConnectionId')
+        //  .then((data) => {
+        //        console.log(data);
+        //        this.connectionId = data;
+        //    });
+        //}
 
 
-        [HttpPut("{id}")]
+    [HttpPut("{id}")]
         [Authorize]
-        public async Task<ActionResult<Messages>> UpdateMessage(string id, updateDTO Msg)
+        public async Task<ActionResult<Messages>> UpdateMessage(Guid id, updateDTO Msg)
         {
             try
             {
+                bool isEditedMessages = false;
+                var result = "Message edited successfully";
                 var currentUser = GetSenderIdFromToken();
-
                 var SenderId = await _messagesService.GetLoggedUser(currentUser);
-                var User = await _messagesService.GetMessageId(id);
+                var Message = await _messagesService.GetMessageId(id);
 
-                if (User.UserId != SenderId.Id) return Unauthorized();
-                if (User == null || id != User.MsgId) return NotFound($"User Id={id} not found ");
+                if (Message.Id != SenderId.Id) return Unauthorized("Unauthorized access");
+                if (Message == null || id != Message.MsgId) return NotFound($"Message not found ");
 
-                User.MsgBody = Msg.content;
-                var UpdatedMsg = await _messageInfo.UpdateMessage(User);
+                Message.MsgBody = Msg.content;
+                
+                var UpdatedMsg = await _messagesService.UpdateMessageService(Message);
+                if (UpdatedMsg != null)
+                {
+                    isEditedMessages = true;
+                    return Ok(new { isEditedMessages, result });
+                }
                 return UpdatedMsg;
             }
             catch (Exception ex)
@@ -98,19 +131,24 @@ namespace ChatApp.Core.Controller
 
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<ActionResult> RemoveMsg(string id)
+        public async Task<ActionResult> RemoveMsg(Guid id)
         {
             try
             {
+                bool isDeletdMessages = false;
+                var result = "Message deleted successfully";
                 var currentUser = GetSenderIdFromToken();
                 var SenderId = await _messagesService.GetLoggedUser(currentUser);
-                Messages User = await _messageInfo.GetMessageById(id);
+                
+                Messages User = await _messagesService.GetMessageId(id);
 
-                if (User.UserId != SenderId.Id) return Unauthorized();
-                if (User == null || id != User.MsgId) return NotFound($"User Id={id} not found ");
+                if (User.Id != SenderId.Id) return Unauthorized("Unauthorized access");
+                if (User == null || id != User.MsgId) return NotFound($"Message not found ");
 
-                await _messageInfo.RemoveMessage(id);
-                return Ok();
+                var response = await _messagesService.Delete(id);
+                if(response)return Ok(new { isDeletdMessages,result });
+
+                return NotFound($"Message not found ");
             }
             catch (Exception ex)
             {
