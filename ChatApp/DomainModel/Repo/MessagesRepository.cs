@@ -1,5 +1,6 @@
 ﻿using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
+using Google.Protobuf;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -92,6 +93,22 @@ namespace ChatApp.DomainModel.Repo
             }
             return false;
 
+        }
+        public IEnumerable<Messages> SearchMessages(string userId, string query)
+        {
+            var normalizedQuery = query.ToLower();
+
+            var matchedMessages = _applicationDbContext.messages
+                .Where(m => (m.Id == userId || m.ReceiverId == userId)
+                         && m.MsgBody.ToLower().Contains(normalizedQuery))
+                .ToList();
+            //// Assuming you have a way to get the messages based on the user's ID
+            //var userMessages = _applicationDbContext.messages.Where(m => m.Id == userId || m.ReceiverId == userId);
+
+            //// Perform the search using the provided query
+            //var matchedMessages = userMessages.Where(m => m.MsgBody.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(); 
+
+            return matchedMessages;
         }
 
     }

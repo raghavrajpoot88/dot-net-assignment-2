@@ -8,7 +8,7 @@ namespace ChatApp.Hubs
     {
         public async Task NewMessage( Messages message)
         {
-            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage",message);
+            await Clients.All.SendAsync("ReceiveMessage",message);
         }
 
         //public string GetConnectionId() => Context.ConnectionId;

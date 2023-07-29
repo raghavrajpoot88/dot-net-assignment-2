@@ -46,5 +46,10 @@ namespace ChatApp.MiddleLayer.Services
             var result = await _messages.RemoveMessage(id);
             return result;
         }
+        public IEnumerable<Messages> Search(string userId, string query)
+        {
+            var result =_messages.SearchMessages(userId,query); 
+            return result;
+        }
     }
 }

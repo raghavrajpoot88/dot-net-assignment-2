@@ -10,6 +10,7 @@ namespace ChatApp.MiddleLayer.Services
         Task<bool> Delete(Guid id);
         Task<IdentityUser> GetLoggedUser(string email);
         Task<Messages> GetMessageId(Guid id);
+        IEnumerable<Messages> Search(string userId, string query);
         Task<Messages> UpdateMessageService(Messages messageInfo);
     }
 }

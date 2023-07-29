@@ -66,6 +66,7 @@ namespace ChatApp.Core.Controller
                     ReceiverId = messageInfo.ReceiverId,
                     MsgBody = messageInfo.MsgBody,
                     TimeStamp = DateTime.UtcNow
+
                 };
                 _messagesService.AddMessageService(message);
                 //Broadcast the message from this point
@@ -153,6 +154,24 @@ namespace ChatApp.Core.Controller
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+        [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchConversations([FromQuery] string query)
+        { 
+            string currentUser = GetSenderIdFromToken();
+            var SenderId = await _messagesService.GetLoggedUser(currentUser);
+            if (string.IsNullOrEmpty(currentUser)) return Unauthorized();
+            try
+            {
+                // Use the repository to search for messages
+                var messages = _messagesService.Search(SenderId.Id, query);
+                return Ok(messages);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
 
