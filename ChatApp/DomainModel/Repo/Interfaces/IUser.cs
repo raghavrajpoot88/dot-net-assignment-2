@@ -11,5 +11,6 @@ namespace ChatApp.DomainModel.Repo.Interfaces
         public Task<IdentityUser> GetUserById(string id);
         public Task AddUser(IdentityUser registeredUser, string Password);
         public Task<IdentityUser> checkUser(loginDTO login);
+        Task<IdentityUser> LoginGoogleUser(googleLoginDTO googleInfo);
     }
 }

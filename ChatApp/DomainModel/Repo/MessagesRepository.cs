@@ -1,6 +1,6 @@
 ﻿using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
-using Google.Protobuf;
+//using Google.Protobuf;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

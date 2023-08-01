@@ -1,6 +1,5 @@
 ﻿using ChatApp.DomainModel.Models;
 using Microsoft.AspNetCore.Identity;
-using Org.BouncyCastle.Bcpg.Sig;
 
 namespace ChatApp.DomainModel.Repo.Interfaces
 {

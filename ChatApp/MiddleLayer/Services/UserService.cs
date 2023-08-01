@@ -4,7 +4,6 @@ using ChatApp.MiddleLayer.DTOs;
 using ChatApp.MiddleLayer.ResponseParameter;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -77,6 +76,12 @@ namespace ChatApp.MiddleLayer.Services
         public async Task<IdentityUser> CheckUserRegister(loginDTO login)
         {   
             var result = await _userRepo.checkUser(login);
+            return result;
+        }
+
+        public async Task<IdentityUser> AuthenticateGoogleUser(googleLoginDTO googleLogin)
+        {
+            var result = await _userRepo.LoginGoogleUser(googleLogin);
             return result;
         }
 

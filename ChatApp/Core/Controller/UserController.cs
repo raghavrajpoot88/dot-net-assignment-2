@@ -3,6 +3,7 @@ using ChatApp.DomainModel.Repo.Interfaces;
 using ChatApp.MiddleLayer.DTOs;
 using ChatApp.MiddleLayer.ResponseParameter;
 using ChatApp.MiddleLayer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -72,5 +73,15 @@ namespace ChatApp.Core.Controller
 
 
         }
+       
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleAuthenticate([FromBody] googleLoginDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.Values.SelectMany(it => it.Errors).Select(it => it.ErrorMessage));
+
+            return Ok(_userService.GenerateToken(await _userService.AuthenticateGoogleUser(request)));
+        }
+
     }
 }

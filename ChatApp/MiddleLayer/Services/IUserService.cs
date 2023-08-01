@@ -7,6 +7,7 @@ namespace ChatApp.MiddleLayer.Services
 {
     public interface IUserService
     {
+        Task<IdentityUser> AuthenticateGoogleUser(googleLoginDTO googleLogin);
         Task<IdentityUser> CheckUserRegister(loginDTO login);
         string GenerateToken(IdentityUser login);
         Task<RegistrationPara> GetUserById(string id);

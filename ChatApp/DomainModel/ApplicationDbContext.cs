@@ -13,6 +13,7 @@ namespace ChatApp.DomainModel
 
         }
         public DbSet<Messages> messages { get; set; }
+        public DbSet<RequestLog> requestlogs { get; set; }
 
 
     }

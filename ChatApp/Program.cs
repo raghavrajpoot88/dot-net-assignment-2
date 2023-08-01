@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog;
-using Serilog.Context;
+
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using ChatApp.Hubs;
@@ -39,6 +38,10 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddScoped<IUser ,UserRepository>();
 builder.Services.AddScoped<IMessagesService, MessagesService>();
 builder.Services.AddScoped<IMessages, MessagesRepository>();
+builder.Services.AddScoped<IRequestLogsService, RequestLogsService>();
+builder.Services.AddScoped<IRequestLog, RequestLogRepository>();
+builder.Services.AddScoped<ILogModelCreator, LogModelCreator>();
+//builder.Services.AddSingleton<IRequestLogger, RequestLogger>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -56,6 +59,11 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer=false,
             ValidateAudience=false
         };
+    })
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Google:ClientSecret"];
     });
 
 
@@ -63,10 +71,10 @@ builder.Services.AddHttpLogging(httpLogging =>
 {
     httpLogging.LoggingFields = HttpLoggingFields.All;
 });
-builder.Host.UseSerilog((hostingContext, LoggerConfig) =>
-{
-    LoggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
-});
+////builder.Host.UseSerilog((hostingContext, LoggerConfig) =>
+//{
+//    LoggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
+//});
 
 
 builder.Services.AddCors(options =>
@@ -113,17 +121,21 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 
 app.UseHttpsRedirection();
-app.UseSerilogRequestLogging();
+//app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
+//app.UseAppException();
+
 app.UseCors();
 
 app.MapControllers();
+//app.UseLogging();
 
-app.UseCustomMiddle();
+app.UseMiddleware<CustomMiddle>();
+
 
 app.MapHub<ChatHub>("/hub");
 
