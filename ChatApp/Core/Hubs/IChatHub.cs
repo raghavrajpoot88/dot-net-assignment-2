@@ -4,8 +4,8 @@ namespace ChatApp.Core.Hubs
 {
     public interface IChatHub
     {
-        Task ReceiveMessage( Messages message);
-        //public Task NewMessage( Messages message);
+        //Task ReceiveMessage( Messages message);
+        ////public Task NewMessage( Messages message);
         //public string GetConnectionId();
     }
 }

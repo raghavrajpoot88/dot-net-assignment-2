@@ -15,6 +15,7 @@ using ChatApp.DomainModel.Repo;
 using ChatApp.DomainModel.Repo.Interfaces;
 using ChatApp.MiddleLayer.Services;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,29 @@ builder.Services.AddAuthentication(options =>
                 .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
             ValidateIssuer=false,
             ValidateAudience=false
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/hub")))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+                //// After successful token validation, retrieve the user's ID from the 'user' object.
+                //var userIdHub = context.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                //// Add the 'NameIdentifier' claim with the user's ID to the ClaimsIdentity.
+                //var identity = context.Principal.Identity as ClaimsIdentity;
+                //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userIdHub));
+            },
         };
     })
     .AddGoogle(options =>

@@ -1,15 +1,19 @@
-﻿using ChatApp.DomainModel.Models;
+﻿using ChatApp.Core.Hubs;
+using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
+using ChatApp.Hubs;
 using ChatApp.MiddleLayer.DTOs;
 using ChatApp.MiddleLayer.ResponseParameter;
 using ChatApp.MiddleLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace ChatApp.Core.Controller
 {
@@ -18,10 +22,12 @@ namespace ChatApp.Core.Controller
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IHubContext<ChatHub> hubContext)
         {
             _userService = userService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -62,7 +68,7 @@ namespace ChatApp.Core.Controller
             if (result != null)
             {
                 string token = _userService.GenerateToken(result);
-                return Ok(new { token, response});
+                return Ok(new { token, response });
 
             }
             return BadRequest("User is not Found");
@@ -73,15 +79,29 @@ namespace ChatApp.Core.Controller
 
 
         }
-       
+
         [HttpPost("google")]
         public async Task<IActionResult> GoogleAuthenticate([FromBody] googleLoginDTO request)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState.Values.SelectMany(it => it.Errors).Select(it => it.ErrorMessage));
+            }
+            var token = _userService.GenerateToken(await _userService.AuthenticateGoogleUser(request));
 
-            return Ok(_userService.GenerateToken(await _userService.AuthenticateGoogleUser(request)));
+            return Ok((new { token }));
         }
+        //private string GetConnectionId()
+        //{
 
+        //    this._hubConnection.invoke('GetConnectionId')
+        //    .then((data) =>
+        //    {
+        //        console.log(data);
+        //        this.connectionId = data;
+        //    });
+
+        //}
     }
 }
+

@@ -38,12 +38,15 @@ namespace ChatApp.DomainModel.Repo
         {
 
             await _userManager.CreateAsync(registeredUser, Password);
-            
+            await _userManager.AddClaimAsync(registeredUser, new Claim(ClaimTypes.Email, registeredUser.Email));
+
+
         }
 
         public async Task<IdentityUser> checkUser(loginDTO login)
         {
             var result = await _userManager.FindByEmailAsync(login.Email);
+            await _userManager.AddClaimAsync(result, new Claim(ClaimTypes.Email, result.Email));
             if (result!= null && await _userManager.CheckPasswordAsync(result, login.Password)) 
             {
                 return result;
@@ -66,6 +69,8 @@ namespace ChatApp.DomainModel.Repo
         // ...
         private async Task<IdentityUser> GetOrCreateExternalLoginUser(string provider, string key, string email, string firstName)
         {
+            firstName = firstName.Replace(" ", ""); 
+
             var user = await _userManager.FindByLoginAsync(provider, key);
             if (user != null)
                 return user;
