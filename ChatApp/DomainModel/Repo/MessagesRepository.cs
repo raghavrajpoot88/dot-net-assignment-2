@@ -55,7 +55,9 @@ namespace ChatApp.DomainModel.Repo
                 || (u.Id == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
 
-            return MessageHistory;
+            var last20Messages = MessageHistory.TakeLast(20).ToList();
+
+            return last20Messages;
         }
 
         public async Task AddMessage(Messages messageInfo)

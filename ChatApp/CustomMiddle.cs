@@ -50,7 +50,7 @@ namespace ChatApp
 
                 RequestLog log = new RequestLog();
 
-                log.RequestDateTimeUtc = DateTime.UtcNow;
+                log.RequestDateTimeUtc = DateTime.Now;
                 HttpRequest httpRequest = httpContext.Request;
 
                 //log 

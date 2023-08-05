@@ -4,6 +4,6 @@ namespace ChatApp.DomainModel.Repo.Interfaces
 {
     public interface IRequestLog
     {
-        Task<ICollection<RequestLog>> GetLogList();
+        Task<ICollection<RequestLog>> GetLogList(string timeInterval);
     }
 }

@@ -21,9 +21,9 @@ namespace ChatApp.Core.Controller
         }
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> RequestLogsOutput()
+        public async Task<IActionResult> RequestLogsOutput(string timeInterval)
         {
-            var result = await _requestLogsService.GetLogs();
+            var result = await _requestLogsService.GetLogs(timeInterval);
             return Ok(result);
         }
     }

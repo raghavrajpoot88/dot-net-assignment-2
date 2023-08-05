@@ -4,6 +4,6 @@ namespace ChatApp.MiddleLayer.Services
 {
     public interface IRequestLogsService
     {
-        Task<ICollection<RequestLog>> GetLogs();
+        Task<ICollection<RequestLog>> GetLogs(string timeInterval);
     }
 }
