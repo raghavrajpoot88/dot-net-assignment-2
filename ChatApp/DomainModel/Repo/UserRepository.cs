@@ -33,6 +33,13 @@ namespace ChatApp.DomainModel.Repo
         {
             return await _userManager.FindByIdAsync(id);
         }
+        public async Task<bool> isUserExist(string email)
+        {
+            var result = await _userManager.FindByEmailAsync(email);
+            if(result==null) return false;
+            return true;
+        }
+        
 
         public async Task AddUser(IdentityUser registeredUser,string Password)
         {

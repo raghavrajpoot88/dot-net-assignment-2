@@ -12,7 +12,7 @@ namespace ChatApp.MiddleLayer.Services
         {
             _requestLog = requestLogs;
         }
-        public async Task<ICollection<RequestLog>> GetLogs(string timeInterval)
+        public async Task<ICollection<RequestLog>> GetLogs(int timeInterval)
         {
            return await _requestLog.GetLogList(timeInterval);
         }

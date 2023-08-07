@@ -5,9 +5,11 @@ using ChatApp.MiddleLayer.ResponseParameter;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Web.Http.Results;
 
 namespace ChatApp.MiddleLayer.Services
 {
@@ -50,6 +52,9 @@ namespace ChatApp.MiddleLayer.Services
                     throw new Exception("User name Required");
                 //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
                 //    throw new Exception("Password Required");
+                if (!await _userRepo.isUserExist(u.Email))
+                    //return StatusCodes.Status409Conflict;
+                    throw new Exception (" Registration failed because the email is already registered");
 
                 var registeredUser = new IdentityUser {
                     Email = u.Email,
