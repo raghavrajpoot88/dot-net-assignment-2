@@ -44,9 +44,9 @@ namespace ChatApp.MiddleLayer.Services
             try
             {
                 //Validations
-                if (string.IsNullOrEmpty(u.Email) || u.Email == "string")
+                if (string.IsNullOrEmpty(u.Email))
                     throw new Exception("Email Required");
-                if (string.IsNullOrEmpty(u.Name) || u.Name == "string")
+                if (string.IsNullOrEmpty(u.Name))
                     throw new Exception("User name Required");
                 //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
                 //    throw new Exception("Password Required");

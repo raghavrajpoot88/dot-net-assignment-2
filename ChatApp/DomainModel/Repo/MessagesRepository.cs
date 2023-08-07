@@ -47,7 +47,7 @@ namespace ChatApp.DomainModel.Repo
             return senderId;
         }
 
-        public async Task<ICollection<Messages>> GetConversationHistory(string UserId, string currentUser, DateTime? before)
+        public async Task<ICollection<Messages>> GetConversationHistory(string UserId, string currentUser, DateTime? before, int count = 20, string sort = "asc")
         {
 
             var senderId = await GetCurrentUser(currentUser);
@@ -55,9 +55,24 @@ namespace ChatApp.DomainModel.Repo
                 || (u.Id == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
 
-            var last20Messages = MessageHistory.TakeLast(20).ToList();
+            if (sort.ToLower() == "desc")
+            {
+                MessageHistory.Reverse();
+            }
 
-            return last20Messages;
+            if (before != null)
+            {
+                MessageHistory = await _applicationDbContext.messages
+                    .Where(m => m.TimeStamp < before)
+                    .ToListAsync();
+            }
+
+            if (MessageHistory.Count > count)
+            {
+                MessageHistory = MessageHistory.TakeLast(count).ToList();
+            }
+
+            return MessageHistory;
         }
 
         public async Task AddMessage(Messages messageInfo)
@@ -104,11 +119,6 @@ namespace ChatApp.DomainModel.Repo
                 .Where(m => (m.Id == userId || m.ReceiverId == userId)
                          && m.MsgBody.ToLower().Contains(normalizedQuery))
                 .ToList();
-            //// Assuming you have a way to get the messages based on the user's ID
-            //var userMessages = _applicationDbContext.messages.Where(m => m.Id == userId || m.ReceiverId == userId);
-
-            //// Perform the search using the provided query
-            //var matchedMessages = userMessages.Where(m => m.MsgBody.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(); 
 
             return matchedMessages;
         }

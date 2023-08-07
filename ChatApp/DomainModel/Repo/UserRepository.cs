@@ -7,8 +7,8 @@ using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+using System.Net;
+using System.Web.Http;
 
 namespace ChatApp.DomainModel.Repo
 {
@@ -47,6 +47,11 @@ namespace ChatApp.DomainModel.Repo
         {
             var result = await _userManager.FindByEmailAsync(login.Email);
             await _userManager.AddClaimAsync(result, new Claim(ClaimTypes.Email, result.Email));
+            if (!await _userManager.CheckPasswordAsync(result, login.Password))
+            {
+                var msg = new HttpResponseMessage(HttpStatusCode.Unauthorized) { ReasonPhrase = "Login failed due to incorrect credentials" };
+                throw new HttpResponseException(msg);
+            }
             if (result!= null && await _userManager.CheckPasswordAsync(result, login.Password)) 
             {
                 return result;

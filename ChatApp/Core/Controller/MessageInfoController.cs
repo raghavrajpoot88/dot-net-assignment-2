@@ -21,19 +21,13 @@ namespace ChatApp.Core.Controller
     [ApiController]
     public class MessageInfoController : ControllerBase
     {
-        private readonly IMessages _messageInfo;
-        private readonly IConfiguration _configuration;
         private readonly IMessagesService _messagesService;
         //private readonly IHubContext<ChatHub> _hubContext;
         //,IHubContext<ChatHub ,IChatHub> hubContext 
 
-        public MessageInfoController(IMessages messageInfo, IConfiguration configuration,
-                                        IMessagesService messagesService)
+        public MessageInfoController( IMessagesService messagesService)
         {
-            _messageInfo = messageInfo;
-            _configuration = configuration;
             _messagesService = messagesService;
-            //_hubContext = hubContext;
         }
 
         // Get Conversation history of messages
@@ -42,7 +36,7 @@ namespace ChatApp.Core.Controller
         public async Task<IActionResult> ConversationHistory(string UserId, DateTime? before = null, int count = 20, string sort = "asc")
         {
             string currentUser = GetSenderIdFromToken();
-            var result = await _messagesService.coversationHistory(UserId, currentUser, before);
+            var result = await _messagesService.coversationHistory(UserId, currentUser, before,count,sort);
             //var result = await _messageInfo.GetConversationHistory(UserId, currentUser, before);
             return Ok(result);
         }
@@ -78,27 +72,9 @@ namespace ChatApp.Core.Controller
                 throw ex;
             }
         }
-        //private string GetConnectionId()
-        //{
-            
-        //        this._hubConnection.invoke('GetConnectionId')
-        //        .then((data) => {
-        //            console.log(data);
-        //            this.connectionId = data;
-        //        });
-            
-        //}
-
-        //    private getConnectionId = () => {
-        //  this._hubConnection.invoke('GetConnectionId')
-        //  .then((data) => {
-        //        console.log(data);
-        //        this.connectionId = data;
-        //    });
-        //}
 
 
-    [HttpPut("{id}")]
+        [HttpPut("{id}")]
         [Authorize]
         public async Task<ActionResult<Messages>> UpdateMessage(Guid id, updateDTO Msg)
         {
@@ -144,12 +120,16 @@ namespace ChatApp.Core.Controller
                 Messages User = await _messagesService.GetMessageId(id);
 
                 if (User.Id != SenderId.Id) return Unauthorized("Unauthorized access");
-                if (User == null || id != User.MsgId) return NotFound($"Message not found ");
+                if (User == null || id != User.MsgId) return NotFound("Message not found ");
 
                 var response = await _messagesService.Delete(id);
-                if(response)return Ok(new { isDeletdMessages,result });
+                if (response) 
+                {
+                    isDeletdMessages = true;
+                    return Ok(isDeletdMessages);
+                }
 
-                return NotFound($"Message not found ");
+                return NotFound(isDeletdMessages);
             }
             catch (Exception ex)
             {

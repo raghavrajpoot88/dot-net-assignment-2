@@ -20,9 +20,9 @@ namespace ChatApp.MiddleLayer.Services
         }
 
 
-        public async Task<ICollection<Messages>> coversationHistory(string UserId, string email, DateTime? before)
+        public async Task<ICollection<Messages>> coversationHistory(string UserId, string email, DateTime? before, int count = 20, string sort = "asc")
         {
-            return await _messages.GetConversationHistory(UserId, email, before); 
+            return await _messages.GetConversationHistory(UserId, email, before,count,sort); 
         }
 
         public async Task<IdentityUser> GetLoggedUser(string email)

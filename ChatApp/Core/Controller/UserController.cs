@@ -31,6 +31,7 @@ namespace ChatApp.Core.Controller
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetUsers()
         {
             var Users = await _userService.GetUsers();
