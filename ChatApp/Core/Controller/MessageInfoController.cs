@@ -147,11 +147,13 @@ namespace ChatApp.Core.Controller
             {
                 // Use the repository to search for messages
                 var messages = _messagesService.Search(SenderId.Id, query);
+                if(messages == null) return BadRequest("Invalid request parameters");
                 return Ok(messages);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                throw;
+                //new { error = ex.Message }
             }
         }
 

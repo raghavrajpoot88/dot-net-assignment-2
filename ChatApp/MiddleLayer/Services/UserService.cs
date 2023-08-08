@@ -24,7 +24,7 @@ namespace ChatApp.MiddleLayer.Services
             _configuration = configuration;
         }
 
-        public async Task<ICollection<IdentityUser>> GetUsers()
+        public async Task<ICollection<RegistrationPara>> GetUsers()
         {
             var result = await _userRepo.GetUsers();
             return result; 
@@ -35,7 +35,7 @@ namespace ChatApp.MiddleLayer.Services
             var result = await _userRepo.GetUserById(id);
             var response = new RegistrationPara
             {
-                UserId = result.Id,
+                Id = result.Id,
                 Name = result.UserName,
                 Email = result.Email,
             };
@@ -65,7 +65,7 @@ namespace ChatApp.MiddleLayer.Services
                 
                 var response = new RegistrationPara
                 { 
-                    UserId = registeredUser.Id,
+                    Id = registeredUser.Id,
                     Name = registeredUser.UserName,
                     Email = registeredUser.Email,
                 };

@@ -1,6 +1,5 @@
 ﻿using ChatApp.DomainModel.Models;
 using ChatApp.DomainModel.Repo.Interfaces;
-using System.Reflection.Metadata.Ecma335;
 
 namespace ChatApp.MiddleLayer.Services
 {
@@ -12,6 +11,7 @@ namespace ChatApp.MiddleLayer.Services
         {
             _requestLog = requestLogs;
         }
+
         public async Task<ICollection<RequestLog>> GetLogs(int timeInterval)
         {
            return await _requestLog.GetLogList(timeInterval);

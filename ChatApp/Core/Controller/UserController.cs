@@ -61,7 +61,7 @@ namespace ChatApp.Core.Controller
             var result = await _userService.CheckUserRegister(login);
             var response = new RegistrationPara
             {
-                UserId = result.Id,
+                Id = result.Id,
                 Name = result.UserName,
                 Email = result.Email,
             };

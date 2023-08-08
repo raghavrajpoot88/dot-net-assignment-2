@@ -20,21 +20,7 @@ namespace ChatApp.DomainModel.Repo
         {
             DateTime endTime = DateTime.Now;
             DateTime startTime = endTime.AddMinutes(-timeInterval); 
-            //switch (timeInterval)
-            //{
-            //    case "5min":
-            //        startTime = endTime.AddMinutes(-5);
-            //        break;
-            //    case "10min":
-            //        startTime = endTime.AddMinutes(-10);
-            //        break;
-            //    case "30min":
-            //        startTime = endTime.AddMinutes(-30);
-            //        break;
-            //    default:
-            //        startTime = DateTime.MinValue;
-            //        break;
-            //}
+            
             var result = await _applicationDbContext.requestlogs
                 .Where(log =>( log.RequestDateTimeUtc >= startTime && log.RequestDateTimeUtc <= endTime)).OrderByDescending
                 (m => m.RequestDateTimeUtc).ToListAsync();

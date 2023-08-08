@@ -10,7 +10,6 @@ namespace ChatApp.DomainModel.Repo
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<IdentityUser> _userManager;
-
         public MessagesRepository(ApplicationDbContext applicationDbContext, UserManager<IdentityUser> userManager)
         {
             _applicationDbContext = applicationDbContext;
@@ -23,24 +22,19 @@ namespace ChatApp.DomainModel.Repo
             var result = await _applicationDbContext.messages.ToListAsync();
             return result;
         }
+
         public async Task<ICollection<Messages>> GetUser(string UserId)
-
         {
-
-            var result = await _applicationDbContext.messages.
-               Where(a => a.Id == UserId).ToListAsync();
-
+            var result = await _applicationDbContext.messages.Where(a => a.Id == UserId).ToListAsync();
             return result;
         }
 
         public async Task<Messages> GetMessageById(Guid id)
         {
-
-            var result = await _applicationDbContext.messages.
-               Where(a => a.MsgId == id).FirstOrDefaultAsync();
-
+            var result = await _applicationDbContext.messages.Where(a => a.MsgId == id).FirstOrDefaultAsync();
             return result;
         }
+
         public async Task<IdentityUser> GetCurrentUser(string email)
         {
             var senderId = await _userManager.FindByEmailAsync(email);
@@ -49,28 +43,13 @@ namespace ChatApp.DomainModel.Repo
 
         public async Task<ICollection<Messages>> GetConversationHistory(string UserId, string currentUser, DateTime? before, int count = 20, string sort = "asc")
         {
-
             var senderId = await GetCurrentUser(currentUser);
             var MessageHistory = await _applicationDbContext.messages.Where (u => (u.ReceiverId == UserId && u.Id == senderId.Id)
                 || (u.Id == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
-
-            if (sort.ToLower() == "desc")
-            {
-                MessageHistory.Reverse();
-            }
-
-            if (before != null)
-            {
-                MessageHistory = await _applicationDbContext.messages
-                    .Where(m => m.TimeStamp < before)
-                    .ToListAsync();
-            }
-
-            if (MessageHistory.Count > count)
-            {
-                MessageHistory = MessageHistory.TakeLast(count).ToList();
-            }
+            if (sort.ToLower() == "desc") MessageHistory.Reverse();
+            if (before != null) MessageHistory = await _applicationDbContext.messages.Where(m => m.TimeStamp < before).ToListAsync();
+            if (MessageHistory.Count > count)  MessageHistory = MessageHistory.TakeLast(count).ToList();
 
             return MessageHistory;
         }
@@ -79,8 +58,8 @@ namespace ChatApp.DomainModel.Repo
         {
             await _applicationDbContext.messages.AddAsync(messageInfo);
             await _applicationDbContext.SaveChangesAsync();
-
         }
+
         public async Task<Messages> UpdateMessage(Messages messageInfo)
         {
             var user = await _applicationDbContext.messages.FirstOrDefaultAsync(a => a.MsgId == messageInfo.MsgId);
@@ -96,8 +75,8 @@ namespace ChatApp.DomainModel.Repo
                 return user;
             }
             return null;
-
         }
+
         public async Task<bool> RemoveMessage(Guid MsgId)
         {
             var result = await _applicationDbContext.messages.Where(a => a.MsgId == MsgId).FirstOrDefaultAsync();
@@ -106,22 +85,16 @@ namespace ChatApp.DomainModel.Repo
                 _applicationDbContext.messages.Remove(result);
                 await _applicationDbContext.SaveChangesAsync();
                 return true;
-
             }
             return false;
-
         }
+
         public IEnumerable<Messages> SearchMessages(string userId, string query)
         {
             var normalizedQuery = query.ToLower();
-
-            var matchedMessages = _applicationDbContext.messages
-                .Where(m => (m.Id == userId || m.ReceiverId == userId)
-                         && m.MsgBody.ToLower().Contains(normalizedQuery))
-                .ToList();
-
+            var matchedMessages = _applicationDbContext.messages.Where(m => (m.Id == userId || m.ReceiverId == userId)&& m.MsgBody
+            .ToLower().Contains(normalizedQuery)).ToList();
             return matchedMessages;
         }
-
     }
 }

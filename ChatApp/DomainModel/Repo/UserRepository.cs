@@ -9,6 +9,8 @@ using static Google.Apis.Auth.GoogleJsonWebSignature;
 using System.Security.Claims;
 using System.Net;
 using System.Web.Http;
+using ChatApp.MiddleLayer.ResponseParameter;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace ChatApp.DomainModel.Repo
 {
@@ -24,9 +26,16 @@ namespace ChatApp.DomainModel.Repo
             _userManager = userManager;
             _configuration = configuration;
         }
-        public async Task<ICollection<IdentityUser>> GetUsers()
+        public async Task<ICollection<RegistrationPara>> GetUsers()
         {
-            var result = await _userManager.Users.ToListAsync();
+            var result = await _userManager.Users
+                .Select(u => new RegistrationPara
+                {
+                    Id = u.Id,
+                    Name = u.UserName,
+                    Email = u.Email,
+                })
+                .ToListAsync();
             return result;
         }
         public async Task<IdentityUser> GetUserById(string id)
