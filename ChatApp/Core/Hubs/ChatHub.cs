@@ -8,20 +8,9 @@ using System.Xml.Linq;
 
 namespace ChatApp.Hubs
 {
-    //public class ChatHub :Hub
-    //{
-    //    public async Task NewMessage( Messages message)
-    //    {
-    //        await Clients.All.SendAsync("ReceiveMessage",message);
-    //    }
+    
 
-    //    public string GetConnectionId() => Context.ConnectionId;
-
-
-
-    //}
-
-    //[Authorize]
+    
     public class ChatHub : Hub
     {
         private readonly static ConnectionMapping<string> _connections =
@@ -44,15 +33,7 @@ namespace ChatApp.Hubs
 
         public override Task OnConnectedAsync()
         {
-            //// Add a test claim directly to the ClaimsPrincipal for testing purposes.
-            //var identity = new ClaimsIdentity(new Claim[]
-            //{
-            //    new Claim(ClaimTypes.NameIdentifier, "TestUserId"),
-            //    // Add other claims if needed.
-            //});
-
-            //Context.User.AddIdentity(identity);
-            //string name = Context.User.Identity.Name;
+            
             string userId = Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             _connections.Add(userId, Context.ConnectionId);
@@ -70,16 +51,6 @@ namespace ChatApp.Hubs
             return base.OnDisconnectedAsync(exception);
         }
 
-        //public override Task OnReconnected()
-        //{
-        //    string userId = Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        //    if (!_connections.GetConnections(userId).Contains(Context.ConnectionId))
-        //    {
-        //        _connections.Add(name, Context.ConnectionId);
-        //    }
-
-        //    return base.OnReconnected();
-        //}
+       
     }
 }

@@ -1,5 +1,4 @@
-﻿using ChatApp.DomainModel.Models;
-using ChatApp.MiddleLayer.DTOs;
+﻿using ChatApp.MiddleLayer.DTOs;
 using ChatApp.MiddleLayer.ResponseParameter;
 using Microsoft.AspNetCore.Identity;
 

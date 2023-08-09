@@ -1,28 +1,22 @@
-﻿using ChatApp.DomainModel.Models;
-using ChatApp.DomainModel.Repo.Interfaces;
+﻿using ChatApp.DomainModel.Repo.Interfaces;
 using ChatApp.MiddleLayer.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
-
-
 using System.Security.Claims;
 using System.Net;
 using System.Web.Http;
 using ChatApp.MiddleLayer.ResponseParameter;
-using static Google.Apis.Requests.BatchRequest;
 
 namespace ChatApp.DomainModel.Repo
 {
     public class UserRepository : IUser
     {
-        private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
 
-        public UserRepository(ApplicationDbContext applicationDbContext, UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public UserRepository(UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
-            _applicationDbContext = applicationDbContext;
             _userManager = userManager;
             _configuration = configuration;
         }
@@ -52,11 +46,8 @@ namespace ChatApp.DomainModel.Repo
 
         public async Task AddUser(IdentityUser registeredUser,string Password)
         {
-
             await _userManager.CreateAsync(registeredUser, Password);
             await _userManager.AddClaimAsync(registeredUser, new Claim(ClaimTypes.Email, registeredUser.Email));
-
-
         }
 
         public async Task<IdentityUser> checkUser(loginDTO login)
@@ -72,8 +63,6 @@ namespace ChatApp.DomainModel.Repo
             {
                 return result;
             }
-            
-
             return null;
         }
 
@@ -83,18 +72,15 @@ namespace ChatApp.DomainModel.Repo
             {
                 Audience = new[] { _configuration["Google:ClientId"] }
             });
-
            return await GetOrCreateExternalLoginUser(googleLoginDTO.PROVIDER, payload.Subject, payload.Email, payload.GivenName);
         }
 
-        // ...
         private async Task<IdentityUser> GetOrCreateExternalLoginUser(string provider, string key, string email, string firstName)
         {
             firstName = firstName.Replace(" ", ""); 
 
             var user = await _userManager.FindByLoginAsync(provider, key);
-            if (user != null)
-                return user;
+            if (user != null) return user;
 
             user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -102,14 +88,11 @@ namespace ChatApp.DomainModel.Repo
                 user = new IdentityUser
                 {
                     Email = email,
-                    //UserName = email,
                     UserName = firstName,
-                    //LastName = lastName,
                     Id = key,
                 };
                 await _userManager.CreateAsync(user);
             }
-
             var info = new UserLoginInfo(provider, key, provider.ToUpperInvariant());
             var result = await _userManager.AddLoginAsync(user, info);
             if (result.Succeeded)
@@ -117,9 +100,5 @@ namespace ChatApp.DomainModel.Repo
 
             return null;
         }
-
-
-
-
     }
 }

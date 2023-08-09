@@ -1,19 +1,10 @@
 ﻿using ChatApp.DomainModel.Models;
-using ChatApp.DomainModel;
-using ChatApp.DomainModel.Repo.Interfaces;
 using ChatApp.MiddleLayer.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using ChatApp.MiddleLayer.Services;
-using Newtonsoft.Json.Linq;
-using ChatApp.Core.Hubs;
-using Microsoft.AspNetCore.SignalR;
-using ChatApp.Hubs;
-using System;
 
 namespace ChatApp.Core.Controller
 {
@@ -22,9 +13,6 @@ namespace ChatApp.Core.Controller
     public class MessageInfoController : ControllerBase
     {
         private readonly IMessagesService _messagesService;
-        //private readonly IHubContext<ChatHub> _hubContext;
-        //,IHubContext<ChatHub ,IChatHub> hubContext 
-
         public MessageInfoController( IMessagesService messagesService)
         {
             _messagesService = messagesService;
@@ -37,7 +25,6 @@ namespace ChatApp.Core.Controller
         {
             string currentUser = GetSenderIdFromToken();
             var result = await _messagesService.coversationHistory(UserId, currentUser, before,count,sort);
-            //var result = await _messageInfo.GetConversationHistory(UserId, currentUser, before);
             return Ok(result);
         }
 
@@ -63,8 +50,6 @@ namespace ChatApp.Core.Controller
 
                 };
                 _messagesService.AddMessageService(message);
-                //Broadcast the message from this point
-                //await _hubContext.Clients.Client(message.ReceiverId).NewMessage( message);
                 return Ok(message);
             }
             catch (Exception ex)
@@ -172,9 +157,8 @@ namespace ChatApp.Core.Controller
             }
             catch (SecurityTokenException ex)
             {
-                throw new Exception("Invalid token.", ex);      // Handle exceptions according to your application's needs
+                throw new Exception("Invalid token.", ex);      
             }
         }
-
     }
 }
