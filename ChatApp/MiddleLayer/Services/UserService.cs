@@ -48,7 +48,7 @@ namespace ChatApp.MiddleLayer.Services
                     throw new Exception("User name Required");
                 //if (string.IsNullOrEmpty(registered.Password) || registered.Password == "string")
                 //    throw new Exception("Password Required");
-                if (!await _userRepo.isUserExist(u.Email))
+                if (await _userRepo.isUserExist(u.Email))
                     //return StatusCodes.Status409Conflict;
                     throw new Exception (" Registration failed because the email is already registered");
 

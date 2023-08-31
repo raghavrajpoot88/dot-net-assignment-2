@@ -22,7 +22,7 @@ namespace ChatApp.DomainModel.Repo
             DateTime startTime = endTime.AddMinutes(-timeInterval); 
             
             var result = await _applicationDbContext.requestlogs
-                .Where(log =>( log.RequestDateTimeUtc >= startTime && log.RequestDateTimeUtc <= endTime)).OrderByDescending
+                .Where(log => (log.RequestDateTimeUtc >= startTime && log.RequestDateTimeUtc <= endTime)).OrderByDescending
                 (m => m.RequestDateTimeUtc).ToListAsync();
             return result;
         }
