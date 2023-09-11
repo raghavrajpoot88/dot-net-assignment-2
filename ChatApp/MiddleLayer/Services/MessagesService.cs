@@ -45,10 +45,10 @@ namespace ChatApp.MiddleLayer.Services
             return result;
         }
 
-        public IEnumerable<Messages> Search(string userId, string query)
+        public IEnumerable<Messages>Search(string userId, string query)
         {
             var result =_messages.SearchMessages(userId,query); 
-            return result;
+            return result; 
         }
     }
 }

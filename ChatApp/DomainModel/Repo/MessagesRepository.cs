@@ -45,10 +45,10 @@ namespace ChatApp.DomainModel.Repo
         {
             var senderId = await GetCurrentUser(currentUser);
             var MessageHistory = await _applicationDbContext.messages.Where (u => (u.ReceiverId == UserId && u.Id == senderId.Id)
-                || (u.Id == UserId && u.ReceiverId == senderId.Id) && (before == null || u.TimeStamp < before))
+                || (u.Id == UserId && u.ReceiverId == senderId.Id))
                 .OrderBy(m => m.TimeStamp).ToListAsync();
             if (sort.ToLower() == "desc") MessageHistory.Reverse();
-            if (before != null) MessageHistory = await _applicationDbContext.messages.Where(m => m.TimeStamp < before).ToListAsync();
+            if (before != null) MessageHistory = MessageHistory.Where(m => m.TimeStamp < before).ToList();
             if (MessageHistory.Count > count)  MessageHistory = MessageHistory.TakeLast(count).ToList();
 
             return MessageHistory;
@@ -90,10 +90,15 @@ namespace ChatApp.DomainModel.Repo
         }
 
         public IEnumerable<Messages> SearchMessages(string userId, string query)
-        {
-            var normalizedQuery = query.ToLower();
-            var matchedMessages = _applicationDbContext.messages.Where(m => (m.Id == userId || m.ReceiverId == userId)&& m.MsgBody
-            .ToLower().Contains(normalizedQuery)).ToList();
+        { 
+            string[] Keywords = query.ToLower().Split(new[] { ' ' });
+
+            var messages = _applicationDbContext.messages.Where(m =>(m.Id == userId || m.ReceiverId == userId)).ToList();
+
+            var matchedMessages = messages
+            .Where(m => Keywords.Any(keyword => m.MsgBody.ToLower().Contains(keyword)))
+                .ToList();
+
             return matchedMessages;
         }
     }

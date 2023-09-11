@@ -14,6 +14,6 @@ namespace ChatApp.DomainModel.Repo.Interfaces
         public Task<Messages> UpdateMessage(Messages messageInfo);
 
         public Task<IdentityUser> GetCurrentUser(string email);
-        IEnumerable<Messages> SearchMessages(string userId, string query);
+        public IEnumerable<Messages> SearchMessages(string userId, string query);
     }
 }

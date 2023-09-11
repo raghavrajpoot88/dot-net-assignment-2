@@ -30,6 +30,28 @@ namespace ChatApp.Hubs
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
         }
+        public async Task EditMessage(Messages message)
+        {
+            string recipientID = message.ReceiverId;
+            var connectionIds = _connections.GetConnections(recipientID);
+
+            foreach (var connectionId in connectionIds)
+            {
+                await Clients.Client(connectionId).SendAsync("ReceiveEditMessage", message);
+            }
+        }
+
+        public async Task DeleteMessage(Messages message)
+        {
+
+            string recipientID = message.ReceiverId;
+            var connectionIds = _connections.GetConnections(recipientID);
+
+            foreach (var connectionId in connectionIds)
+            {
+                await Clients.Client(connectionId).SendAsync("ReceiveDeleteMessage", message);
+            }
+        }
 
         public override Task OnConnectedAsync()
         {
